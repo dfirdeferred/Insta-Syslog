@@ -7,7 +7,7 @@
 #                                                                               #
 #################################################################################
 
-..\syslogconf.ps1
+..\syslogSettings.ps1
 $day = Get-Date -Format "dd"
 $month = Get-Date -Format "MM"
 $year = Get-Date -Format "yyyy"
@@ -149,13 +149,25 @@ Function StartReceive([Net.Sockets.Socket]$Socket)
 
     Write-Host $MessageString -ForegroundColor $Fore -BackgroundColor $Back
 
- #uncomment to enable log start
-
     $Day = (Get-Date).Day
     $DateStamp = (Get-Date).ToString("yyyy.MM.dd")
     $LogFile = "$LogFolder$HostName-$DateStamp.log"
     $MessageString >> $LogFile
- #uncomment to enable log End
+
+
+    #adds email functionality
+    if($emailfrom -ne "" -and $emailto -ne "" -and $smtpserver -ne "")
+    switch($Severity)
+    {
+        Emergency
+                {Send-MailMessage -From $emailfrom -To $emailto -Subject "$Severity level Syslog alert" -Body "$MessageString" -SmtpServer $smtpserver}
+        Alert
+                {Send-MailMessage -From $emailfrom -To $emailto -Subject "$Severity level Syslog alert" -Body "$MessageString" -SmtpServer $smtpserver}
+        Error
+                {Send-MailMessage -From $emailfrom -To $emailto -Subject "$Severity level Syslog alert" -Body "$MessageString" -SmtpServer $smtpserver}
+        Critical
+                {Send-MailMessage -From $emailfrom -To $emailto -Subject "$Severity level Syslog alert" -Body "$MessageString" -SmtpServer $smtpserver}
+    }
 
    }
 }
